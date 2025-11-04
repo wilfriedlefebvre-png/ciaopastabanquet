@@ -292,21 +292,26 @@ export default function BanquetApp() {
               <button type="submit" className="rounded-2xl bg-black text-white px-5 py-2 font-medium hover:opacity-90">Save</button>
               <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
                   const defaultName = `banquet-summary-${new Date().toISOString().slice(0,10)}`;
-                  const fileName = window.prompt("Enter filename for download:", defaultName);
-                  if (fileName === null) return; // User cancelled
+                  const fileName = prompt("Enter filename for download:", defaultName);
                   
+                  if (fileName === null || fileName.trim() === "") {
+                    // User cancelled or entered empty string
+                    return;
+                  }
+                  
+                  const finalFileName = fileName.trim();
                   const text = summary; // includes Special Notes
                   const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
-                  a.download = fileName.trim() || defaultName + ".txt";
-                  if (!a.download.endsWith(".txt")) {
-                    a.download += ".txt";
-                  }
+                  a.download = finalFileName.endsWith(".txt") ? finalFileName : finalFileName + ".txt";
+                  document.body.appendChild(a);
                   a.click();
+                  document.body.removeChild(a);
                   URL.revokeObjectURL(url);
                 }}
                 className="rounded-2xl border border-gray-300 px-5 py-2 font-medium hover:bg-gray-50"
