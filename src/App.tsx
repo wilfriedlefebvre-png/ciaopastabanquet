@@ -293,12 +293,19 @@ export default function BanquetApp() {
               <button
                 type="button"
                 onClick={() => {
+                  const defaultName = `banquet-summary-${new Date().toISOString().slice(0,10)}`;
+                  const fileName = window.prompt("Enter filename for download:", defaultName);
+                  if (fileName === null) return; // User cancelled
+                  
                   const text = summary; // includes Special Notes
                   const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
-                  a.download = `banquet-summary-${new Date().toISOString().slice(0,10)}.txt`;
+                  a.download = fileName.trim() || defaultName + ".txt";
+                  if (!a.download.endsWith(".txt")) {
+                    a.download += ".txt";
+                  }
                   a.click();
                   URL.revokeObjectURL(url);
                 }}
