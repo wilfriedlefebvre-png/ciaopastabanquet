@@ -83,7 +83,6 @@ export default function BanquetApp() {
   const [specialNotes, setSpecialNotes] = useState("");
   const [creditCard, setCreditCard] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState(false);
 
   const selectedMenu = useMemo(() => MENUS.find((m) => m.id === menuId)!, [menuId]);
   const priceAdult = selectedMenu.price;
@@ -105,7 +104,6 @@ export default function BanquetApp() {
   function handleSubmit(ev: React.FormEvent) {
     ev.preventDefault();
     if (!validate()) return;
-    setSubmitted(true);
   }
 
   const summary = useMemo(() => {
