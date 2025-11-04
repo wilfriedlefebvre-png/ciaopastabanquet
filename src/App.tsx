@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 
 const MENUS = [
   {
@@ -135,6 +135,32 @@ export default function BanquetApp() {
     setDownloadFileName("");
   }
 
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -50px 0px"
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+        }
+      });
+    }, observerOptions);
+
+    const sections = document.querySelectorAll(".fade-in-section");
+    sections.forEach((section) => {
+      observer.observe(section);
+    });
+
+    return () => {
+      sections.forEach((section) => {
+        observer.unobserve(section);
+      });
+    };
+  }, []);
+
   const summary = useMemo(() => {
     return `Banquet Request\nContact Name: ${contactName || "—"}\nEvent: ${eventType}\nDate: ${eventDate || "—"}\nTime: ${eventTime || "—"}\nAdults: ${adultCount}\nKids: ${kidCount}\nMenu: ${selectedMenu.name}\nSubtotal: $${foodSubtotal.toFixed(2)}\nTax (7.75%): $${tax.toFixed(2)}\nGratuity (20%): $${gratuity.toFixed(2)}\nTotal: $${grandTotal.toFixed(2)}\nDeposit: $200.00\nCredit Card: ${creditCard || "—"}\nSpecial Notes: ${specialNotes}`;
   }, [contactName, eventType, eventDate, eventTime, adultCount, kidCount, priceAdult, selectedMenu, foodSubtotal, tax, gratuity, grandTotal, creditCard, specialNotes]);
@@ -151,13 +177,13 @@ export default function BanquetApp() {
       }}
     >
       <div className="mx-auto max-w-5xl relative z-10">
-        <header className="text-center mb-8">
+        <header className="text-center mb-8 fade-in-section">
           <h1 className="text-3xl font-bold text-white">Ciao Pasta Banquet</h1>
         </header>
 
         <div className="grid lg:grid-cols-3 gap-6">
           <form onSubmit={handleSubmit} className="lg:col-span-2 bg-white rounded-2xl shadow p-6 space-y-6">
-            <section>
+            <section className="fade-in-section">
               <label className="block text-sm font-medium">Kind of event</label>
               <input
                 type="text"
@@ -169,7 +195,7 @@ export default function BanquetApp() {
               {errors.eventType && <p className="text-sm text-red-600 mt-1">{errors.eventType}</p>}
             </section>
 
-            <section>
+            <section className="fade-in-section">
               <label className="block text-sm font-medium">Contact Name</label>
               <input
                 type="text"
@@ -180,7 +206,7 @@ export default function BanquetApp() {
               />
             </section>
 
-            <section>
+            <section className="fade-in-section">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium">Date of Event</label>
@@ -203,7 +229,7 @@ export default function BanquetApp() {
               </div>
             </section>
 
-            <section>
+            <section className="fade-in-section">
               <h2 className="text-xl font-semibold mb-3">Guests</h2>
               <div className="grid sm:grid-cols-2 gap-4 items-end">
                 <div>
@@ -229,7 +255,7 @@ export default function BanquetApp() {
               </div>
             </section>
 
-            <section>
+            <section className="fade-in-section">
               <h2 className="text-xl font-semibold mb-3">Menu</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 {MENUS.map((m) => (
@@ -256,7 +282,7 @@ export default function BanquetApp() {
               </div>
             </section>
 
-            <section>
+            <section className="fade-in-section">
               <label className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -267,7 +293,7 @@ export default function BanquetApp() {
               </label>
             </section>
 
-            <section className="space-y-3">
+            <section className="fade-in-section space-y-3">
               <h2 className="text-xl font-semibold">Beverages</h2>
               <div className="space-y-2">
                 <label className="flex items-center gap-3">
@@ -296,7 +322,7 @@ export default function BanquetApp() {
               )}
             </section>
 
-            <section>
+            <section className="fade-in-section">
               <h2 className="text-xl font-semibold">Special Notes</h2>
               <textarea
                 value={specialNotes}
@@ -306,7 +332,7 @@ export default function BanquetApp() {
               />
             </section>
 
-            <section>
+            <section className="fade-in-section">
               <label className="block text-sm font-medium">Credit Card for $200 Deposit</label>
               <input
                 type="text"
@@ -343,7 +369,7 @@ export default function BanquetApp() {
             </div>
           </form>
 
-          <aside className="bg-white rounded-2xl shadow p-6 h-fit sticky top-6">
+          <aside className="fade-in-section bg-white rounded-2xl shadow p-6 h-fit sticky top-6">
             <h3 className="text-lg font-semibold">Summary</h3>
             <div className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between"><span>Adults:</span><span>{adultCount} × ${priceAdult}</span></div>
