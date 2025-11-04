@@ -83,6 +83,8 @@ export default function BanquetApp() {
   const [specialNotes, setSpecialNotes] = useState("");
   const [creditCard, setCreditCard] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadFileName, setDownloadFileName] = useState("");
 
   const selectedMenu = useMemo(() => MENUS.find((m) => m.id === menuId)!, [menuId]);
   const priceAdult = selectedMenu.price;
@@ -104,6 +106,33 @@ export default function BanquetApp() {
   function handleSubmit(ev: React.FormEvent) {
     ev.preventDefault();
     if (!validate()) return;
+  }
+
+  function handleDownloadClick() {
+    const defaultName = `banquet-summary-${new Date().toISOString().slice(0,10)}`;
+    setDownloadFileName(defaultName);
+    setShowDownloadModal(true);
+  }
+
+  function handleDownloadConfirm() {
+    if (!downloadFileName.trim()) {
+      const defaultName = `banquet-summary-${new Date().toISOString().slice(0,10)}`;
+      setDownloadFileName(defaultName);
+    }
+    
+    const finalFileName = downloadFileName.trim() || `banquet-summary-${new Date().toISOString().slice(0,10)}`;
+    const text = summary;
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = finalFileName.endsWith(".txt") ? finalFileName : finalFileName + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setShowDownloadModal(false);
+    setDownloadFileName("");
   }
 
   const summary = useMemo(() => {
@@ -292,30 +321,12 @@ export default function BanquetApp() {
               <button type="submit" className="rounded-2xl bg-black text-white px-5 py-2 font-medium hover:opacity-90">Save</button>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const defaultName = `banquet-summary-${new Date().toISOString().slice(0,10)}`;
-                  const fileName = prompt("Enter filename for download:", defaultName);
-                  
-                  if (fileName === null || fileName.trim() === "") {
-                    // User cancelled or entered empty string
-                    return;
-                  }
-                  
-                  const finalFileName = fileName.trim();
-                  const text = summary; // includes Special Notes
-                  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = finalFileName.endsWith(".txt") ? finalFileName : finalFileName + ".txt";
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                }}
-                className="rounded-2xl border border-gray-300 px-5 py-2 font-medium hover:bg-gray-50"
+                onClick={handleDownloadClick}
+                className="rounded-2xl border border-gray-300 px-5 py-2 font-medium hover:bg-gray-50 flex items-center gap-2"
               >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
                 Download Summary (.txt)
               </button>
               <button
@@ -346,6 +357,50 @@ export default function BanquetApp() {
           </aside>
         </div>
       </div>
+
+      {/* Download Modal */}
+      {showDownloadModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowDownloadModal(false)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-semibold mb-4">Enter filename for download</h3>
+            <input
+              type="text"
+              value={downloadFileName}
+              onChange={(e) => setDownloadFileName(e.target.value)}
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-black"
+              placeholder="Enter filename"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleDownloadConfirm();
+                } else if (e.key === "Escape") {
+                  setShowDownloadModal(false);
+                  setDownloadFileName("");
+                }
+              }}
+            />
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDownloadModal(false);
+                  setDownloadFileName("");
+                }}
+                className="flex-1 rounded-xl border border-gray-300 px-4 py-2 font-medium hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadConfirm}
+                className="flex-1 rounded-xl bg-black text-white px-4 py-2 font-medium hover:opacity-90"
+              >
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
