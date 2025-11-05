@@ -344,7 +344,6 @@ export default function BanquetApp() {
             </section>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button type="submit" className="rounded-2xl bg-black text-white px-5 py-2 font-medium hover:opacity-90">Save</button>
               <button
                 type="button"
                 onClick={handleDownloadClick}
