@@ -72,6 +72,7 @@ function classNames(...xs: (string | false | null | undefined)[]) {
 export default function BanquetApp() {
   const [eventType, setEventType] = useState("");
   const [contactName, setContactName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
   const [adultCount, setAdultCount] = useState(0);
@@ -81,7 +82,9 @@ export default function BanquetApp() {
   const [beverages, setBeverages] = useState<BeverageOption>("NON_ALC");
   const [wineSelection, setWineSelection] = useState("");
   const [specialNotes, setSpecialNotes] = useState("");
-  const [creditCard, setCreditCard] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiration, setCardExpiration] = useState("");
+  const [cardCVV, setCardCVV] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [downloadFileName, setDownloadFileName] = useState("");
@@ -162,8 +165,8 @@ export default function BanquetApp() {
   }, []);
 
   const summary = useMemo(() => {
-    return `Banquet Request\nContact Name: ${contactName || "—"}\nEvent: ${eventType}\nDate: ${eventDate || "—"}\nTime: ${eventTime || "—"}\nAdults: ${adultCount}\nKids: ${kidCount}\nMenu: ${selectedMenu.name}\nSubtotal: $${foodSubtotal.toFixed(2)}\nTax (7.75%): $${tax.toFixed(2)}\nGratuity (20%): $${gratuity.toFixed(2)}\nTotal: $${grandTotal.toFixed(2)}\nDeposit: $200.00\nCredit Card: ${creditCard || "—"}\nSpecial Notes: ${specialNotes}`;
-  }, [contactName, eventType, eventDate, eventTime, adultCount, kidCount, priceAdult, selectedMenu, foodSubtotal, tax, gratuity, grandTotal, creditCard, specialNotes]);
+    return `Banquet Request\nContact Name: ${contactName || "—"}\nPhone Number: ${phoneNumber || "—"}\nEvent: ${eventType}\nDate: ${eventDate || "—"}\nTime: ${eventTime || "—"}\nAdults: ${adultCount}\nKids: ${kidCount}\nMenu: ${selectedMenu.name}\nSubtotal: $${foodSubtotal.toFixed(2)}\nTax (7.75%): $${tax.toFixed(2)}\nGratuity (20%): $${gratuity.toFixed(2)}\nTotal: $${grandTotal.toFixed(2)}\nDeposit: $200.00\nCredit Card Number: ${cardNumber || "—"}\nExpiration: ${cardExpiration || "—"}\nCVV: ${cardCVV || "—"}\nSpecial Notes: ${specialNotes}`;
+  }, [contactName, phoneNumber, eventType, eventDate, eventTime, adultCount, kidCount, priceAdult, selectedMenu, foodSubtotal, tax, gratuity, grandTotal, cardNumber, cardExpiration, cardCVV, specialNotes]);
 
   return (
     <div 
@@ -203,6 +206,29 @@ export default function BanquetApp() {
                 onChange={(e) => setContactName(e.target.value)}
                 className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
                 placeholder="Enter contact name"
+              />
+            </section>
+
+            <section className="fade-in-section">
+              <label className="block text-sm font-medium">Phone Number</label>
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
+                  if (value.length <= 10) {
+                    let formatted = value;
+                    if (value.length >= 6) {
+                      formatted = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
+                    } else if (value.length >= 3) {
+                      formatted = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+                    }
+                    setPhoneNumber(formatted);
+                  }
+                }}
+                className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="(123) 456-7890"
+                maxLength={14}
               />
             </section>
 
@@ -333,14 +359,54 @@ export default function BanquetApp() {
             </section>
 
             <section className="fade-in-section">
-              <label className="block text-sm font-medium">Credit Card for $200 Deposit</label>
-              <input
-                type="text"
-                value={creditCard}
-                onChange={(e) => setCreditCard(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-                placeholder="Enter credit card number"
-              />
+              <h2 className="text-xl font-semibold mb-3">Credit Card</h2>
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium">Card Number</label>
+                  <input
+                    type="text"
+                    value={cardNumber.replace(/(\d{4})(?=\d)/g, "$1 ")}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "").slice(0, 16);
+                      setCardNumber(value);
+                    }}
+                    className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="1234 5678 9012 3456"
+                    maxLength={19}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Expiration</label>
+                  <input
+                    type="text"
+                    value={cardExpiration}
+                    onChange={(e) => {
+                      let value = e.target.value.replace(/\D/g, "");
+                      if (value.length >= 2) {
+                        value = value.slice(0, 2) + "/" + value.slice(2, 4);
+                      }
+                      setCardExpiration(value);
+                    }}
+                    className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="MM/YY"
+                    maxLength={5}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">CVV</label>
+                  <input
+                    type="text"
+                    value={cardCVV}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      setCardCVV(value);
+                    }}
+                    className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                    placeholder="123"
+                    maxLength={4}
+                  />
+                </div>
+              </div>
             </section>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
